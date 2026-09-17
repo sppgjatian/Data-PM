@@ -78,22 +78,23 @@ function closeLoginModal() {
 
 async function handleLogin(e) {
     e.preventDefault();
-    const username = document.getElementById('loginUsername').value.trim();
     const pin = document.getElementById('loginPin').value.trim();
 
     try {
+        // Ambil PIN dari database
         const { data, error } = await supabase
-            .from('super_users')
-            .select('*')
-            .eq('username', username)
-            .eq('pin', pin)
+            .from('super_pin')
+            .select('pin')
+            .eq('id', 1)
             .single();
 
-        if (error || !data) {
+        // Cek apakah PIN cocok
+        if (error || !data || data.pin !== pin) {
             document.getElementById('loginError').style.display = 'flex';
             return;
         }
 
+        // Login berhasil
         isSuperUser = true;
         sessionStorage.setItem('isSuperUser', 'true');
         updateSuperUserUI();
