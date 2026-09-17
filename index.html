@@ -175,19 +175,15 @@
             <div class="modal-body">
                 <form onsubmit="handleLogin(event)">
                     <div class="form-group">
-                        <label>Username</label>
-                        <input type="text" id="loginUsername" placeholder="Masukkan username" required>
-                    </div>
-                    <div class="form-group">
-                        <label>PIN (6 digit)</label>
-                        <input type="password" id="loginPin" placeholder="Masukkan PIN" maxlength="6" pattern="[0-9]{6}" required>
+                        <label>Masukkan PIN</label>
+                        <input type="password" id="loginPin" placeholder="Contoh: 2024" maxlength="10" required>
                     </div>
                     <div id="loginError" class="login-error" style="display:none;">
                         <i class="fas fa-exclamation-circle"></i>
-                        <span>Username atau PIN salah!</span>
+                        <span>PIN salah! Silakan coba lagi.</span>
                     </div>
                     <button type="submit" class="btn-submit" style="width:100%; justify-content:center;">
-                        <i class="fas fa-sign-in-alt"></i> Login
+                        <i class="fas fa-sign-in-alt"></i> Masuk
                     </button>
                 </form>
             </div>
