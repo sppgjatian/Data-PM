@@ -9,10 +9,10 @@ let currentFile = null;
 let previewData = [];
 let schoolData = [];
 let modalCurrentPage = 1;
-let currentSchoolFile = null; // Untuk download
+let currentSchoolFile = null;
 const ITEMS_PER_PAGE = 20;
 
-// Super User State
+// Super User State (persist di session)
 let isSuperUser = sessionStorage.getItem('isSuperUser') === 'true';
 
 // ===== HELPERS =====
@@ -48,16 +48,16 @@ function updateSuperUserUI() {
     const btnDownload = document.getElementById('btnDownload');
 
     if (isSuperUser) {
-        badge.style.display = 'flex';
-        loginBtn.style.display = 'none';
-        subtitle.textContent = 'Mode Super User - Data ditampilkan lengkap tanpa sensor.';
+        if (badge) badge.style.display = 'flex';
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (subtitle) subtitle.textContent = 'Mode Super User - Data ditampilkan lengkap tanpa sensor.';
         if (sensorNotice) sensorNotice.style.display = 'none';
         if (superNotice) superNotice.style.display = 'flex';
         if (btnDownload) btnDownload.style.display = 'flex';
     } else {
-        badge.style.display = 'none';
-        loginBtn.style.display = 'flex';
-        subtitle.textContent = 'Klik nama sekolah untuk melihat data (data sensitif disensor).';
+        if (badge) badge.style.display = 'none';
+        if (loginBtn) loginBtn.style.display = 'flex';
+        if (subtitle) subtitle.textContent = 'Klik nama sekolah untuk melihat data (data sensitif disensor).';
         if (sensorNotice) sensorNotice.style.display = 'flex';
         if (superNotice) superNotice.style.display = 'none';
         if (btnDownload) btnDownload.style.display = 'none';
@@ -66,13 +66,12 @@ function updateSuperUserUI() {
 
 function showLoginModal() {
     document.getElementById('loginModal').classList.add('show');
-    document.getElementById('loginUsername').focus();
+    setTimeout(() => document.getElementById('loginPin').focus(), 100);
 }
 
 function closeLoginModal() {
     document.getElementById('loginModal').classList.remove('show');
     document.getElementById('loginError').style.display = 'none';
-    document.getElementById('loginUsername').value = '';
     document.getElementById('loginPin').value = '';
 }
 
@@ -81,20 +80,17 @@ async function handleLogin(e) {
     const pin = document.getElementById('loginPin').value.trim();
 
     try {
-        // Ambil PIN dari database
         const { data, error } = await supabase
             .from('super_pin')
             .select('pin')
             .eq('id', 1)
             .single();
 
-        // Cek apakah PIN cocok
         if (error || !data || data.pin !== pin) {
             document.getElementById('loginError').style.display = 'flex';
             return;
         }
 
-        // Login berhasil
         isSuperUser = true;
         sessionStorage.setItem('isSuperUser', 'true');
         updateSuperUserUI();
@@ -347,7 +343,7 @@ function filterSchools() {
 // ===== MODAL DETAIL =====
 async function openSchoolDetail(school) {
     modalCurrentPage = 1;
-    currentSchoolFile = school.file_name; // Simpan untuk download
+    currentSchoolFile = school.file_name;
     document.getElementById('modalTitle').textContent = school.school_name;
     document.getElementById('modalOverlay').classList.add('show');
     updateSuperUserUI();
@@ -384,8 +380,12 @@ function renderModalData(data) {
             : '<span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:4px;font-size:11px;">L</span>';
 
         // Sensor atau tidak tergantung super user
-        const nikDisplay = isSuperUser ? escapeHtml(row.nik) : `<span class="sensored">${maskNIK(row.nik)}</span>`;
-        const tglDisplay = isSuperUser ? escapeHtml(row.tanggal_lahir) : `<span class="sensored">${maskTanggal(row.tanggal_lahir)}</span>`;
+        const nikDisplay = isSuperUser 
+            ? escapeHtml(row.nik) 
+            : `<span class="sensored">${maskNIK(row.nik)}</span>`;
+        const tglDisplay = isSuperUser 
+            ? escapeHtml(row.tanggal_lahir) 
+            : `<span class="sensored">${maskTanggal(row.tanggal_lahir)}</span>`;
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -425,7 +425,6 @@ function renderModalPagination(totalPages, allData) {
 function modalGoPage(page) {
     modalCurrentPage = page;
     const schoolName = document.getElementById('modalTitle').textContent;
-    // Re-fetch
     supabase.from('recipients').select('*').eq('school_name', schoolName).order('nama_lengkap').then(({ data }) => {
         if (data) renderModalData(data);
     });
@@ -436,7 +435,7 @@ function closeModal() {
     currentSchoolFile = null;
 }
 
-// ===== DOWNLOAD EXCEL (FILE ASLI DARI STORAGE) =====
+// ===== DOWNLOAD EXCEL ASLI =====
 async function downloadExcel() {
     if (!currentSchoolFile) {
         showToast('File tidak ditemukan!', 'error');
@@ -447,14 +446,12 @@ async function downloadExcel() {
     document.getElementById('loadingText').textContent = 'Menyiapkan download...';
 
     try {
-        // Download file asli dari Supabase Storage
         const { data, error } = await supabase.storage
             .from('sppg-uploads')
             .download(currentSchoolFile);
 
         if (error) throw error;
 
-        // Create blob URL dan trigger download
         const url = URL.createObjectURL(data);
         const a = document.createElement('a');
         a.href = url;

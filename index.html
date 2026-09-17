@@ -4,12 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SPPG Jatian Pakusari Jember - Upload Data MBG</title>
+    
+    <!-- Favicon SVG -->
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS for Excel -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
@@ -21,7 +27,7 @@
                 <i class="fas fa-bars"></i>
             </button>
             <div class="logo-area">
-                <img src="logo-header.png" alt="Logo" class="logo-header-img">
+                <img src="logo-header.png" alt="Logo Badan Gizi Nasional" class="logo-header-img">
                 <div class="logo-text">
                     <h1>SPPG JATIAN PAKUSARI JEMBER</h1>
                     <span>Upload Data Penerima Manfaat MBG</span>
@@ -29,7 +35,7 @@
             </div>
         </div>
         <div class="header-right" id="headerRight">
-            <!-- Super User Badge (hidden by default) -->
+            <!-- Super User Badge -->
             <div class="super-badge" id="superBadge" style="display:none;">
                 <i class="fas fa-shield-alt"></i>
                 <span>Super User</span>
@@ -37,6 +43,7 @@
                     <i class="fas fa-sign-out-alt"></i>
                 </button>
             </div>
+            <!-- Login Button -->
             <button class="login-btn" id="loginBtn" onclick="showLoginModal()">
                 <i class="fas fa-lock"></i>
                 <span>Login</span>
@@ -197,7 +204,7 @@
                 <h3 id="modalTitle">Data Sekolah</h3>
                 <div class="modal-actions">
                     <button class="btn-download" id="btnDownload" style="display:none;" onclick="downloadExcel()">
-                        <i class="fas fa-download"></i> Download Excel
+                        <i class="fas fa-download"></i> <span>Download Excel</span>
                     </button>
                     <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
                 </div>
