@@ -85,23 +85,15 @@
     }
 
     function updateSuperUserUI() {
-        const badge = $('superBadge');
-        const loginBtn = $('loginBtn');
-        const subtitle = $('listSubtitle');
-        const sensorNotice = $('sensorNotice');
-        const superNotice = $('superNotice');
-        const btnDownload = $('btnDownload');
-
         const loggedIn = isSuperUser;
-
-        if (badge) badge.style.display = loggedIn ? 'flex' : 'none';
-        if (loginBtn) loginBtn.style.display = loggedIn ? 'none' : 'flex';
-        if (subtitle) subtitle.textContent = loggedIn
+        if ($('superBadge')) $('superBadge').style.display = loggedIn ? 'flex' : 'none';
+        if ($('loginBtn')) $('loginBtn').style.display = loggedIn ? 'none' : 'flex';
+        if ($('listSubtitle')) $('listSubtitle').textContent = loggedIn
             ? 'Mode Super User - Data ditampilkan lengkap tanpa sensor.'
             : 'Klik nama sekolah untuk melihat data (data sensitif disensor).';
-        if (sensorNotice) sensorNotice.style.display = loggedIn ? 'none' : 'flex';
-        if (superNotice) superNotice.style.display = loggedIn ? 'flex' : 'none';
-        if (btnDownload) btnDownload.style.display = loggedIn ? 'flex' : 'none';
+        if ($('sensorNotice')) $('sensorNotice').style.display = loggedIn ? 'none' : 'flex';
+        if ($('superNotice')) $('superNotice').style.display = loggedIn ? 'flex' : 'none';
+        if ($('btnDownload')) $('btnDownload').style.display = loggedIn ? 'flex' : 'none';
     }
 
     function showLoginModal() {
