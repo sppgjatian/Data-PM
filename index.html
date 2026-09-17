@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIPGN - Upload Data Penerima Manfaat MBG</title>
+    
+    <!-- FAVICON SVG -->
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- SheetJS for Excel parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+
+   <!-- Header -->
+<header class="main-header">
+    <div class="header-left">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="logo-area">
+            <img src="logo-header.png" alt="Logo Badan Gizi Nasional" class="logo-header-img">
+            <div class="logo-text">
+                <h1>SIPGN</h1>
+                <span>Upload Data Penerima Manfaat MBG</span>
+            </div>
+        </div>
+    </div>
+    <div class="header-right">
+        <div class="user-info">
+            <div class="user-avatar">RR</div>
+            <div class="user-details">
+                <span class="user-name">SPPG Upload Portal</span>
+                <span class="user-role">Badan Gizi Nasional</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+            <div class="menu-section">
+                <span class="menu-label">MENU</span>
+                <a href="#" class="menu-item active" onclick="showPage('upload')">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                    <span>Upload Data</span>
+                </a>
+                <a href="#" class="menu-item" onclick="showPage('list')">
+                    <i class="fas fa-list-alt"></i>
+                    <span>Daftar Upload</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <span class="menu-label">REFERENSI</span>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Template Excel</span>
+                </a>
+                <a href="#" class="menu-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Panduan</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+
+        <!-- Upload Page -->
+        <div class="page" id="page-upload">
+            <div class="page-header">
+                <h2><i class="fas fa-cloud-upload-alt"></i> Upload Data Penerima Manfaat</h2>
+                <p>Silakan upload file Excel (.xlsx/.xls) data penerima manfaat MBG sesuai template yang telah diberikan.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-file-excel" style="color: #28a745;"></i> Form Upload Excel</h3>
+                </div>
+                <div class="card-body">
+
+                    <!-- Info Box -->
+                    <div class="info-box">
+                        <i class="fas fa-info-circle"></i>
+                        <div>
+                            <strong>Petunjuk Upload:</strong>
+                            <ul>
+                                <li>Gunakan file Excel (.xlsx atau .xls) sesuai template yang telah dibagikan via WhatsApp</li>
+                                <li>Kolom wajib: <strong>nama_lengkap, tanggal_lahir, gender, nik, type, identity_code, kategori, sub_kategori</strong></li>
+                                <li>Format tanggal: <strong>DD/MM/YYYY</strong> (contoh: 01/01/2000)</li>
+                                <li>Gender: <strong>L</strong> = Laki-laki, <strong>P</strong> = Perempuan</li>
+                                <li>NIK harus <strong>16 digit angka</strong></li>
+                                <li>Type: <strong>nisn</strong> atau <strong>student-id</strong></li>
+                                <li>Nama penerima manfaat gunakan <strong>HURUF KAPITAL</strong></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <form id="uploadForm" onsubmit="handleUpload(event)">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nama SPPG / Sekolah <span class="required">*</span></label>
+                                <input type="text" id="sppgName" placeholder="Contoh: KB MUTIARA HATI" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Kategori <span class="required">*</span></label>
+                                <select id="category" required>
+                                    <option value="">-- Pilih Kategori --</option>
+                                    <option value="TK">TK</option>
+                                    <option value="SD">SD</option>
+                                    <option value="SMP">SMP</option>
+                                    <option value="SMA">SMA</option>
+                                    <option value="SMK">SMK</option>
+                                    <option value="SLB">SLB</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Nama Kepala Sekolah / PIC <span class="required">*</span></label>
+                                <input type="text" id="picName" placeholder="Nama lengkap PIC" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Nomor Telepon <span class="required">*</span></label>
+                                <input type="tel" id="phoneNumber" placeholder="+62 8xxxxxxxxxx" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Kode Identitas (NPSN) <span class="required">*</span></label>
+                                <input type="text" id="identityCode" placeholder="Contoh: 69777459" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipe Identitas <span class="required">*</span></label>
+                                <select id="identityType" required>
+                                    <option value="NPSN">NPSN</option>
+                                    <option value="NSM">NSM</option>
+                                    <option value="TPK">TPK</option>
+                                    <option value="Lainnya">Lainnya</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>File Excel <span class="required">*</span></label>
+                            <div class="file-upload-area" id="dropZone">
+                                <input type="file" id="fileInput" accept=".xlsx,.xls" required onchange="handleFileSelect(event)">
+                                <div class="upload-icon">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <p class="upload-text">Klik atau drag file Excel ke sini</p>
+                                <p class="upload-hint">Format: .xlsx atau .xls (Maks 10MB)</p>
+                                <div id="filePreview" class="file-preview" style="display:none;">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span id="fileName"></span>
+                                    <button type="button" class="remove-file" onclick="removeFile()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Preview Table -->
+                        <div id="previewSection" style="display:none;">
+                            <h4><i class="fas fa-table"></i> Preview Data (<span id="rowCount">0</span> baris)</h4>
+                            <div class="table-responsive">
+                                <table class="preview-table" id="previewTable">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Nama Lengkap</th>
+                                            <th>Tanggal Lahir</th>
+                                            <th>Gender</th>
+                                            <th>NIK</th>
+                                            <th>Type</th>
+                                            <th>Identity Code</th>
+                                            <th>Kategori</th>
+                                            <th>Sub Kategori</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="previewBody">
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn-submit" id="submitBtn">
+                                <i class="fas fa-upload"></i> Upload Data
+                            </button>
+                            <button type="button" class="btn-reset" onclick="resetForm()">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- List Page -->
+        <div class="page" id="page-list" style="display:none;">
+            <div class="page-header">
+                <h2><i class="fas fa-list-alt"></i> Daftar Data yang Sudah Diupload</h2>
+                <p>Live data penerima manfaat MBG dari seluruh SPPG.</p>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-database"></i> Data Penerima Manfaat</h3>
+                    <div class="card-actions">
+                        <input type="text" id="searchInput" placeholder="Cari nama, NIK, sekolah..." oninput="filterData()">
+                        <select id="filterCategory" onchange="filterData()">
+                            <option value="">Semua Kategori</option>
+                            <option value="TK">TK</option>
+                            <option value="SD">SD</option>
+                            <option value="SMP">SMP</option>
+                            <option value="SMA">SMA</option>
+                            <option value="SMK">SMK</option>
+                            <option value="SLB">SLB</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="stats-row" id="statsRow">
+                        <div class="stat-card">
+                            <i class="fas fa-school"></i>
+                            <div>
+                                <span class="stat-number" id="statSPPG">0</span>
+                                <span class="stat-label">Total SPPG</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <span class="stat-number" id="statTotal">0</span>
+                                <span class="stat-label">Total Penerima</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-female"></i>
+                            <div>
+                                <span class="stat-number" id="statFemale">0</span>
+                                <span class="stat-label">Perempuan</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-male"></i>
+                            <div>
+                                <span class="stat-number" id="statMale">0</span>
+                                <span class="stat-label">Laki-laki</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table" id="dataTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nama Lengkap</th>
+                                    <th>Tanggal Lahir</th>
+                                    <th>Gender</th>
+                                    <th>NIK</th>
+                                    <th>SPPG / Sekolah</th>
+                                    <th>Kategori</th>
+                                    <th>Sub Kategori</th>
+                                    <th>Tanggal Upload</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dataTableBody">
+                                <tr>
+                                    <td colspan="9" class="loading-cell">
+                                        <i class="fas fa-spinner fa-spin"></i> Memuat data...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination" id="pagination">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+        <div class="loading-spinner">
+            <i class="fas fa-circle-notch fa-spin"></i>
+            <p>Memproses upload...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
