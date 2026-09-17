@@ -53,6 +53,63 @@
         return (safe || 'upload').substring(0, 50);
     }
 
+    function parseExcelDate(value) {
+        if (value === null || value === undefined || text(value) === '') return null;
+
+        if (typeof value === 'number') {
+            const date = new Date(Math.round((value - 25569) * 86400 * 1000));
+            return Number.isNaN(date.getTime()) ? null : date;
+        }
+
+        const raw = text(value).replace(/\s+/g, ' ');
+        const date = new Date(raw);
+        if (!Number.isNaN(date.getTime())) return date;
+
+        const match = raw.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+        if (!match) return null;
+
+        const [_, day, month, yearRaw] = match;
+        const year = yearRaw.length === 2 ? 2000 + Number(yearRaw) : Number(yearRaw);
+        const parsed = new Date(year, Number(month) - 1, Number(day));
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    function isValidGender(value) {
+        return ['L', 'P'].includes(text(value).toUpperCase());
+    }
+
+    function validateRow(row, rowNumber) {
+        const errors = [];
+
+        if (text(row.nama_lengkap).length < 2) {
+            errors.push('baris ' + rowNumber + ': nama_lengkap wajib diisi');
+        }
+
+        const birthDate = parseExcelDate(row.tanggal_lahir);
+        if (!birthDate) {
+            errors.push('baris ' + rowNumber + ': tanggal_lahir tidak valid');
+        }
+
+        if (!isValidGender(row.gender)) {
+            errors.push('baris ' + rowNumber + ': gender harus L atau P');
+        }
+
+        const nik = text(row.nik).replace(/\D/g, '');
+        if (nik.length !== 16) {
+            errors.push('baris ' + rowNumber + ': nik harus 16 digit');
+        }
+
+        if (text(row.kategori) === '') {
+            errors.push('baris ' + rowNumber + ': kategori wajib diisi');
+        }
+
+        if (text(row.sub_kategori) === '') {
+            errors.push('baris ' + rowNumber + ': sub_kategori wajib diisi');
+        }
+
+        return errors;
+    }
+
     function maskNIK(value) {
         const valueText = text(value);
         if (valueText.length <= 4) return '****';
@@ -196,9 +253,8 @@
                 const workbook = XLSX.read(new Uint8Array(event.target.result), { type: 'array' });
                 if (!workbook.SheetNames.length) throw new Error('Sheet Excel tidak ditemukan.');
 
-                const rows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' })
-                    .map(normalizeRow)
-                    .filter((row) => Object.keys(row).length > 0);
+                const sheetRows = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { defval: '' });
+                const rows = sheetRows.map(normalizeRow).filter((row) => Object.keys(row).length > 0);
 
                 if (!rows.length) {
                     rejectFile('File Excel kosong.');
@@ -210,8 +266,19 @@
                     throw new Error('Kolom wajib tidak ditemukan: ' + missingColumns.join(', '));
                 }
 
-                previewData = rows;
-                showPreview(rows);
+                const validationErrors = [];
+                const validRows = rows.filter((row, index) => {
+                    const errors = validateRow(row, index + 2);
+                    if (errors.length) validationErrors.push(...errors);
+                    return errors.length === 0;
+                });
+
+                if (validationErrors.length) {
+                    throw new Error(validationErrors.slice(0, 3).join('; '));
+                }
+
+                previewData = validRows;
+                showPreview(validRows);
             } catch (error) {
                 rejectFile(error.message || 'File Excel tidak valid.');
             }
